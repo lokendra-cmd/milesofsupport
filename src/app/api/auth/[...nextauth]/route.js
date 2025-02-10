@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
-// import EmailProvider from 'next-auth/providers/email'
+import GoogleProvider from "next-auth/providers/google";
 import connectDB from "@/app/DB/connectDB";
 import User from "@/app/Models/User";
 
@@ -12,22 +12,17 @@ export const authoptions = NextAuth({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET
     }),
-    // EmailProvider({
-    //   server: {
-    //     host: process.env.EMAIL_SERVER_HOST,
-    //     port: process.env.EMAIL_SERVER_PORT,
-    //     auth: {
-    //       user: process.env.EMAIL_SERVER_USER,
-    //       pass: process.env.EMAIL_SERVER_PASSWORD,
-    //     },
-    //   },
-    //   from: process.env.EMAIL_FROM,
-    // }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET
+    }),
+    
   ],
+  // Pass the MongoDB connection here
   callbacks: {
     async signIn({ user, account }) {
      
-      if(account.provider === 'github'){
+     
         await connectDB();
 
         const currentUser = await User.findOne({ email: user.email });
@@ -40,7 +35,7 @@ export const authoptions = NextAuth({
           });
           
         }       
-      }
+      
       return true;
     }
   }
