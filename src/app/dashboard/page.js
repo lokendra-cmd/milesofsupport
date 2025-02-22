@@ -8,6 +8,7 @@ import { getData, updateProfile } from '../actions/userAction'
 import { useSelector, useDispatch } from 'react-redux'
 import { updateUserField, setUser } from '@/app/StateManagment/Slices/currentUserSlice'
 import { ToastContainer, toast } from 'react-toastify';
+import { CldUploadWidget } from 'next-cloudinary';
 import 'react-toastify/dist/ReactToastify.css';
 
 
@@ -42,13 +43,77 @@ const page = () => {
     } catch (error) {
       toast.error("Failed to update data!")
     }
+  }
 
+  async function deleteImage(publicId) {
+    if (!publicId) {
+      console.error("No publicId provided for deletion");
+      return;
+    }
 
+    try {
+      const response = await fetch("/api/cloudinary", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ publicId }), // 🔹 Make sure this matches API route
+      });
+
+      const data = await response.json();
+      console.log("Delete response:", data);
+    } catch (error) {
+      console.error("Error deleting image:", error);
+    }
+  }
+
+  const handleProfilePicture = async (result, desc) => {
+    if (desc == 'profile') {
+      try {
+        if (currentUser.profilepic !== "") {
+          deleteImage(currentUser.profilepic_id)
+        }
+        let data = {
+          name: currentUser.name,
+          address: currentUser.address,
+          email: currentUser.email,
+          topic: currentUser.topic,
+          username: currentUser.username,
+          profilepic: result.info.secure_url,
+          profilepic_id: result.info.public_id,
+        }
+        dispatch(setUser(data));
+        await updateProfile(data).then(toast.success("Profile updated successfully!"));
+      } catch (error) {
+        console.log(error)
+        toast.error("Failed to update data!")
+      }
+    }
+    else {
+      try {
+        if (currentUser.coverpic !== "") {
+          deleteImage(currentUser.coverpic_id)
+        }
+        let data = {
+          name: currentUser.name,
+          address: currentUser.address,
+          email: currentUser.email,
+          topic: currentUser.topic,
+          username: currentUser.username,
+          coverpic: result.info.secure_url,
+          coverpic_id: result.info.public_id,
+        }
+        dispatch(setUser(data));
+        await updateProfile(data).then(toast.success("Profile updated successfully!"));
+      } catch (error) {
+        console.log(error)
+        toast.error("Failed to update data!")
+      }
+    }
   }
   useEffect(() => {
     // Fetch data and then dispatch the action to update the store
-
+    console.log(currentUser)
   }, [triggerEffect]);
+
 
   return (
     <>
@@ -66,7 +131,7 @@ const page = () => {
           {`Welcome ${currentUser.name}`}
         </div>
         <div className="relative mx-auto w-[10vw] h-[10vw] rounded-full overflow-hidden ">
-          <Image src={profilePhoto} alt="Description of image" layout="fill" objectFit="cover" objectPosition="center" />
+          <Image src={currentUser.profilepic} alt="Description of image" layout="fill" objectFit="cover" objectPosition="center" />
         </div>
 
 
@@ -100,13 +165,36 @@ const page = () => {
 
           <div className=''>
             <label className="block  mb-2 text-sm  text-gray-900 dark:text-gray-400" htmlFor="file_input">Profile Picture</label>
-            <input className="block p-[1vh] w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="file_input_help" id="file_input" type="file" />
+            <CldUploadWidget
+              signatureEndpoint="/api/cloudinary"
+              onSuccess={(result) => { handleProfilePicture(result,'profile') }}
+              options={{
+                maxFiles: 1, // Restrict to one image
+                cropping: false, // Disable cropping
+                multiple: false, // Only one file at a time
+                showAdvancedOptions: false, // Hide advanced options
+              }}
+            >
+              {({ open }) => <button className='text-start text-gray-300 p-[1vh] bg-white bg-opacity-20 w-[100%] shadow-lg' onClick={() => open()}>Upload profile picture</button>}
+            </CldUploadWidget>
             <p className="  mt-1 text-[0.8rem] text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG or GIF.</p>
           </div>
 
           <div className=''>
             <label className="block  mb-2 text-sm  text-gray-900 dark:text-gray-400" htmlFor="file_input">Cover Photo</label>
-            <input className="block p-[1vh] w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="file_input_help" id="file_input" type="file" />
+            <CldUploadWidget
+              signatureEndpoint="/api/cloudinary"
+              onSuccess={(result) => { handleProfilePicture(result,'cover') }}
+              options={{
+                maxFiles: 1, // Restrict to one image
+                cropping: false, // Disable cropping
+                multiple: false, // Only one file at a time
+                showAdvancedOptions: false, // Hide advanced options
+               
+              }}
+            >
+              {({ open }) => <button className='text-start text-gray-300 p-[1vh] bg-white bg-opacity-20 w-[100%] shadow-lg' onClick={() => open()}>Upload cover picture</button>}
+            </CldUploadWidget>
             <p className="  mt-1 text-[0.8rem] text-gray-500 dark:text-gray-300" id="file_input_help">SVG, PNG, JPG or GIF.</p>
           </div>
 

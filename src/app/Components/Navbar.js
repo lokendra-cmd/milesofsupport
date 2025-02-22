@@ -32,6 +32,13 @@ const Navbar = () => {
                         topic:data.topic,
                         email:data.email,
                         username:data.username,
+                        profilepic:data.profilepic,
+                        profilepic_id:data.profilepic_id,
+                        coverpic:data.coverpic,
+                        coverpic_id:data.coverpic_id,
+                        razorpayid:data.razorpayid,
+                        razorpaysecret:data.razorpaysecret,
+                        creator:data.creator,
                     }
                     dispatch(setUser(user));
                 })

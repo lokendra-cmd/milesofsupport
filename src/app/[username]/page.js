@@ -9,7 +9,7 @@ import { RxAvatar } from "react-icons/rx";
 import { useSession } from 'next-auth/react'
 import { fetchPayments, initiatePayment, fetchUser } from '@/app/actions/userAction';
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouter, useParams,useSearchParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { setSelectedUser } from '@/app/StateManagment/Slices/selectedUserSlice';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -26,6 +26,7 @@ const dashboard = () => {
   const [payments, setpayments] = useState([])
   const [triggerUseEffect, settriggerUseEffect] = useState(false)
   const paymentStatus = searchparam.get('payment');
+  const defaultProfilepic= "https://images.unsplash.com/photo-1601579279274-c958531e7d2b?q=80&w=1925&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   const handlechange = (e) => {
     setpaymentForm({ ...paymentForm, [e.target.name]: e.target.value })
@@ -61,7 +62,7 @@ const dashboard = () => {
 
     setpaymentForm({ name: "", message: "", amount: "" })
     settriggerUseEffect(!triggerUseEffect);
-    
+
   }
 
   const getPayments = async (email) => {
@@ -76,9 +77,17 @@ const dashboard = () => {
       if (data !== null) {
         const user = {
           name: data.name,
-          email: data.email,
+          address: data.address,
           topic: data.topic,
+          email: data.email,
           username: data.username,
+          profilepic: data.profilepic,
+          profilepic_id: data.profilepic_id,
+          coverpic: data.coverpic,
+          coverpic_id: data.coverpic_id,
+          razorpayid: data.razorpayid,
+          razorpaysecret: data.razorpaysecret,
+          creator: data.creator,
         };
         dispatch(setSelectedUser(user));
 
@@ -96,13 +105,13 @@ const dashboard = () => {
   }, [username, selectedUser.email, triggerUseEffect])
 
   useEffect(() => {
-   if(paymentStatus=="successful"){
-    toast.success("Payment Done Successfuly")
-    const cleanUrl = window.location.href.replace(/[?&]payment=successful(&|$)/, '').replace(/\?$/, '');
-    router.replace(cleanUrl);
-   }
+    if (paymentStatus == "successful") {
+      toast.success("Payment Done Successfuly")
+      const cleanUrl = window.location.href.replace(/[?&]payment=successful(&|$)/, '').replace(/\?$/, '');
+      router.replace(cleanUrl);
+    }
   }, [])
-  
+
 
   return (
     <>
@@ -118,13 +127,13 @@ const dashboard = () => {
       <Script src="https://checkout.razorpay.com/v1/checkout.js"></Script>
       <div className=' flex justify-center items-center'>
         <div className="relative w-[80vw] h-[30vh] overflow-hidden ">
-          <Image src={coverPhoto} alt="Description of image" layout="fill" objectFit="cover" objectPosition="center" className="transition-all" />
+          <Image src={selectedUser.coverpic ||defaultProfilepic} alt="Description of image" layout="fill" objectFit="cover" objectPosition="center" className="transition-all" />
         </div>
       </div>
 
       <div className=' flex justify-center items-center h-[15vh]'>
         <div className="relative top-[-5vh] w-[12vw] h-[12vw] rounded-full overflow-hidden ">
-          <Image src={profilePhoto} alt="Description of image" layout="fill" objectFit="cover" objectPosition="center" />
+          <Image src={selectedUser.profilepic} alt="Description of image" layout="fill" objectFit="cover" objectPosition="center" />
         </div>
       </div>
 
